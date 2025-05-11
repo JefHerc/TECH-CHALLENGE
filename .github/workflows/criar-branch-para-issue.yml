@@ -23,23 +23,20 @@ jobs:
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
 
-      - name: Criar nova branch e commit inicial
-        id: commit_info
+      - name: Criar nova branch com commit inicial
+        id: commit_inicial
         run: |
           git checkout -b "#${{ steps.dados_issue.outputs.numero }}"
-          echo "${{ steps.dados_issue.outputs.titulo }}" > .init.txt
-          git add .init.txt
-          # Exemplo de mensagem padrão com tipo semântico
-          COMMIT_MSG="feat: ${{ steps.dados_issue.outputs.titulo }} (#${{ steps.dados_issue.outputs.numero }})"
-          git commit -m "$COMMIT_MSG"
+          echo "#${{ steps.dados_issue.outputs.numero }} - ${{ steps.dados_issue.outputs.titulo }}" > "ISSUE-${{ steps.dados_issue.outputs.numero }}.md"
+          git add "ISSUE-${{ steps.dados_issue.outputs.numero }}.md"
+          git commit -m "chore: ${{ steps.dados_issue.outputs.titulo }} (#${{ steps.dados_issue.outputs.numero }})"
           git push origin "#${{ steps.dados_issue.outputs.numero }}"
+          echo "mensagem=$(git log -1 --pretty=%B)" >> $GITHUB_OUTPUT
 
-          echo "message=$COMMIT_MSG" >> $GITHUB_OUTPUT
-
-      - name: Extrair tipo semântico do commit
+      - name: Extrair tipo do commit
         id: tipo_commit
         run: |
-          TIPO=$(echo "${{ steps.commit_info.outputs.message }}" | cut -d: -f1)
+          TIPO=$(echo "${{ steps.commit_inicial.outputs.mensagem }}" | cut -d: -f1)
           echo "tipo=$TIPO" >> $GITHUB_OUTPUT
 
       - name: Criar Pull Request
@@ -48,5 +45,5 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
           branch: "#${{ steps.dados_issue.outputs.numero }}"
           title: "#${{ steps.dados_issue.outputs.numero }} ${{ steps.tipo_commit.outputs.tipo }}: ${{ steps.dados_issue.outputs.titulo }}"
-          body: "${{ steps.commit_info.outputs.message }}"
+          body: "${{ steps.commit_inicial.outputs.mensagem }}"
           base: main
