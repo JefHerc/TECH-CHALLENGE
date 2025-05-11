@@ -5,27 +5,36 @@ on:
     types: [opened]
 
 jobs:
-  criar-branch:
+  criar-branch-e-pr:
     runs-on: ubuntu-latest
     steps:
       - name: Clonar repositório
         uses: actions/checkout@v3
 
-      - name: Extrair dados da issue
-        id: vars
+      - name: Extrair número e título da issue
+        id: issue
         run: |
-          NUMERO=${{ github.event.issue.number }}
-          echo "ISSUE_NUMBER=#${NUMERO}" >> $GITHUB_ENV
+          echo "ISSUE_NUMBER=#${{ github.event.issue.number }}" >> $GITHUB_ENV
+          echo "ISSUE_TITLE=${{ github.event.issue.title }}" >> $GITHUB_ENV
 
       - name: Configurar Git
         run: |
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
 
-      - name: Criar branch com nome '#<n>'
+      - name: Criar branch
         run: |
           git checkout -b "${{ env.ISSUE_NUMBER }}"
-          echo "Branch criada pela issue #${{ env.ISSUE_NUMBER }}" > "issue-${{ env.ISSUE_NUMBER }}.md"
+          echo "Branch criada automaticamente pela issue ${{ env.ISSUE_NUMBER }}" > "issue-${{ env.ISSUE_NUMBER }}.md"
           git add .
-          git commit -m "chore: criar branch para issue ${{ env.ISSUE_NUMBER }}"
+          git commit -m "chore: iniciar desenvolvimento da issue ${{ env.ISSUE_NUMBER }}"
           git push origin "${{ env.ISSUE_NUMBER }}"
+
+      - name: Criar Pull Request
+        uses: peter-evans/create-pull-request@v5
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          title: "${{ env.ISSUE_NUMBER }} chore: iniciar desenvolvimento da issue"
+          body: "Este Pull Request foi criado automaticamente a partir da issue ${{ env.ISSUE_NUMBER }}.\nRelacionado à issue ${{ env.ISSUE_NUMBER }}."
+          base: main
+          head: "${{ env.ISSUE_NUMBER }}"
