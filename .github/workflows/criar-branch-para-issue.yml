@@ -13,17 +13,41 @@ jobs:
         uses: actions/checkout@v3
 
       - name: Extrair dados da issue
-        env:
-          ISSUE_NUMBER: ${{ github.event.issue.number }}
+        id: dados_issue
         run: |
-          echo "BRANCH_NAME=#${ISSUE_NUMBER}" >> $GITHUB_ENV
+          echo "numero=${{ github.event.issue.number }}" >> $GITHUB_OUTPUT
+          echo "titulo=${{ github.event.issue.title }}" >> $GITHUB_OUTPUT
 
       - name: Configurar Git
         run: |
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
 
-      - name: Criar branch
+      - name: Criar nova branch
         run: |
-          git checkout -b "${{ env.BRANCH_NAME }}"
-          git push origin "${{ env.BRANCH_NAME }}"
+          git checkout -b "#${{ steps.dados_issue.outputs.numero }}"
+          touch .init.txt
+          echo "${{ steps.dados_issue.outputs.titulo }}" > .init.txt
+          git add .init.txt
+          git commit -m "${{ steps.dados_issue.outputs.titulo }}"
+          git push origin "#${{ steps.dados_issue.outputs.numero }}"
+
+      - name: Extrair tipo de commit (semântico)
+        id: tipo_commit
+        run: |
+          commit_message="${{ steps.dados_issue.outputs.titulo }}"
+          # Extrair tipo do commit semântico (feat, fix, chore, etc.)
+          tipo_commit=$(echo "$commit_message" | grep -oE '^(feat|fix|chore|docs|style|refactor|perf|test)\([a-zA-Z0-9_-]*\):' | cut -d ':' -f 1)
+          if [ -z "$tipo_commit" ]; then
+            tipo_commit="other"
+          fi
+          echo "tipo=$tipo_commit" >> $GITHUB_OUTPUT
+
+      - name: Criar Pull Request
+        uses: peter-evans/create-pull-request@v5
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          branch: "#${{ steps.dados_issue.outputs.numero }}"
+          title: "#${{ steps.dados_issue.outputs.numero }} ${{ steps.tipo_commit.outputs.tipo }}: ${{ steps.dados_issue.outputs.titulo }}"
+          body: "${{ steps.dados_issue.outputs.titulo }}"
+          base: main

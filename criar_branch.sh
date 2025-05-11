@@ -7,7 +7,7 @@ read -p "Digite o título da tarefa (ex: Criar tela de login): " TITLE
 
 BRANCH="#$ISSUE"
 COMMIT="chore: $TITLE (#$ISSUE)"
-TOUCH_FILE="issue-$ISSUE.txt"
+TOUCH_FILE="#$ISSUE.txt"
 
 git checkout main
 git pull origin main
