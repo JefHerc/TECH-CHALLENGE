@@ -23,25 +23,24 @@ jobs:
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
 
-      - name: Criar nova branch
+      - name: Criar nova branch e commit inicial
+        id: commit_info
         run: |
           git checkout -b "#${{ steps.dados_issue.outputs.numero }}"
-          touch .init.txt
           echo "${{ steps.dados_issue.outputs.titulo }}" > .init.txt
           git add .init.txt
-          git commit -m "${{ steps.dados_issue.outputs.titulo }}"
+          # Exemplo de mensagem padrão com tipo semântico
+          COMMIT_MSG="feat: ${{ steps.dados_issue.outputs.titulo }} (#${{ steps.dados_issue.outputs.numero }})"
+          git commit -m "$COMMIT_MSG"
           git push origin "#${{ steps.dados_issue.outputs.numero }}"
 
-      - name: Extrair tipo de commit (semântico)
+          echo "message=$COMMIT_MSG" >> $GITHUB_OUTPUT
+
+      - name: Extrair tipo semântico do commit
         id: tipo_commit
         run: |
-          commit_message="${{ steps.dados_issue.outputs.titulo }}"
-          # Extrair tipo do commit semântico (feat, fix, chore, etc.)
-          tipo_commit=$(echo "$commit_message" | grep -oE '^(feat|fix|chore|docs|style|refactor|perf|test)\([a-zA-Z0-9_-]*\):' | cut -d ':' -f 1)
-          if [ -z "$tipo_commit" ]; then
-            tipo_commit="other"
-          fi
-          echo "tipo=$tipo_commit" >> $GITHUB_OUTPUT
+          TIPO=$(echo "${{ steps.commit_info.outputs.message }}" | cut -d: -f1)
+          echo "tipo=$TIPO" >> $GITHUB_OUTPUT
 
       - name: Criar Pull Request
         uses: peter-evans/create-pull-request@v5
@@ -49,5 +48,5 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
           branch: "#${{ steps.dados_issue.outputs.numero }}"
           title: "#${{ steps.dados_issue.outputs.numero }} ${{ steps.tipo_commit.outputs.tipo }}: ${{ steps.dados_issue.outputs.titulo }}"
-          body: "${{ steps.dados_issue.outputs.titulo }}"
+          body: "${{ steps.commit_info.outputs.message }}"
           base: main
