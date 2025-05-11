@@ -1,0 +1,29 @@
+name: Criar branch automática para issue
+
+on:
+  issues:
+    types: [opened]
+
+jobs:
+  criar-branch:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Clonar repositório
+        uses: actions/checkout@v3
+
+      - name: Extrair dados da issue
+        env:
+          ISSUE_NUMBER: ${{ github.event.issue.number }}
+        run: |
+          echo "BRANCH_NAME=#${ISSUE_NUMBER}" >> $GITHUB_ENV
+
+      - name: Configurar Git
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+
+      - name: Criar branch
+        run: |
+          git checkout -b "${{ env.BRANCH_NAME }}"
+          git push origin "${{ env.BRANCH_NAME }}"
