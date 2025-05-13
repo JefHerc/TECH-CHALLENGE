@@ -3,8 +3,6 @@ package br.com.fiap.postech.gestao_restaurantes.gateway.database.jpa.entity;
 import jakarta.persistence.*;
 import lombok.*;
 
-import java.util.List;
-
 
 @Entity
 @Table(name="endereco")
