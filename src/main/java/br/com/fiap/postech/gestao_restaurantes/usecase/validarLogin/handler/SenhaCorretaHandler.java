@@ -11,6 +11,6 @@ public class SenhaCorretaHandler extends AutenticarUsuarioHandler {
         if (!Objects.equals(credenciais.getSenha(), credenciais.getUsuario().getSenha())) {
             throw new SenhaInvalidaException();
         }
-        return next.handle(credenciais);
+        return true;
     }
 }

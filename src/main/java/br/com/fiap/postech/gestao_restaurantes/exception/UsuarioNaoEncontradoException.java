@@ -6,6 +6,6 @@ import lombok.Getter;
 public class UsuarioNaoEncontradoException extends SystemBaseException {
 
     private final String code = "usuario.naoEncontrado";
-    private final String message = "Usuário não encontrado";
+    private final String message = "Usuário não encontrado!";
     private final Integer httpStatus = 404;
 }
