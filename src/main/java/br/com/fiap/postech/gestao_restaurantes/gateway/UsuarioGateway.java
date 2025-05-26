@@ -1,12 +1,14 @@
 package br.com.fiap.postech.gestao_restaurantes.gateway;
 
-import br.com.fiap.postech.gestao_restaurantes.domain.Usuario;
-
 import java.util.Optional;
+
+import br.com.fiap.postech.gestao_restaurantes.domain.Usuario;
 
 public interface UsuarioGateway {
 
     public Long criar(Usuario usuario);
+    
+    public void deletar(Long id); 
 
     public Optional<Usuario> buscarPorLogin(String login);
 }
