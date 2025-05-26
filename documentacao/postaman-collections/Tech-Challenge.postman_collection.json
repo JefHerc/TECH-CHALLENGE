@@ -63,6 +63,36 @@
 				}
 			},
 			"response": []
+		},
+		{
+			"name": "Deletar usuario",
+			"request": {
+				"method": "DELETE",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:8080/auth/delete/1",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"auth",
+						"delete",
+						"1"
+					]
+				}
+			},
+			"response": []
 		}
 	]
 }

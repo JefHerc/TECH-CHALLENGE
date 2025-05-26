@@ -1,8 +1,14 @@
 package br.com.fiap.postech.gestao_restaurantes.gateway.database.jpa;
 
+import java.time.LocalDateTime;
+import java.util.Optional;
+
+import org.springframework.stereotype.Component;
+
 import br.com.fiap.postech.gestao_restaurantes.domain.Endereco;
 import br.com.fiap.postech.gestao_restaurantes.domain.Usuario;
 import br.com.fiap.postech.gestao_restaurantes.exception.ErroAoAcessarRepositorioException;
+import br.com.fiap.postech.gestao_restaurantes.exception.UsuarioNaoEncontradoException;
 import br.com.fiap.postech.gestao_restaurantes.gateway.UsuarioGateway;
 import br.com.fiap.postech.gestao_restaurantes.gateway.database.jpa.entity.EnderecoEntity;
 import br.com.fiap.postech.gestao_restaurantes.gateway.database.jpa.entity.UsuarioEntity;
@@ -11,10 +17,6 @@ import br.com.fiap.postech.gestao_restaurantes.gateway.database.jpa.repository.U
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.stereotype.Component;
-
-import java.time.LocalDateTime;
-import java.util.Optional;
 
 @Slf4j
 @Component
@@ -43,6 +45,21 @@ public class UsuarioJpaGateway implements UsuarioGateway {
         }
     }
 
+    @Override
+    @Transactional
+    public void deletar(Long id) {
+    	Optional<UsuarioEntity> usuarioById = usuarioRepository.findById(id);
+    	
+        if (!usuarioById.isPresent()) {
+            throw new UsuarioNaoEncontradoException();
+        }
+        
+        enderecoRepository.deleteById(usuarioById.get().getEndereco().getId());
+        usuarioRepository.deleteById(id);
+        
+        log.info("Usuário deletado com sucesso: ID={}", id);
+    }
+    
     @Override
     public Optional<Usuario> buscarPorLogin(String login) {
         Optional<UsuarioEntity> usuarioEntityOptional = usuarioRepository.findByLogin(login);
